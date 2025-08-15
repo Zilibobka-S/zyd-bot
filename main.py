@@ -1,14 +1,14 @@
-import os
 from dotenv import load_dotenv
 load_dotenv()
 from telegram import Update
 from telegram.ext import filters, ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler
 import asyncio
 import aiofiles
-import yt_dlp
+from yt_dlp import YoutubeDL
+import aiofiles.os
 import os
 api_key = os.getenv("API_KEY")
-
+#downloaddir =
 
 
 
@@ -24,23 +24,24 @@ async def video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Отправьте ссылку на видео!")
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(update.message.text)
+    downloadname = str(update.message.from_user.id) +".mp4"
+
     await log(update.message)
-
+    await update.message.reply_text("Got a link!")
     url = update.message.text
-    if os.path.exists((str(update.message.from_user.id)) + ".mp4"):
-        os.remove(str(update.message.from_user.id) +".mp4")
-    ydl_opts = {
-    "outtmpl": str(update.message.from_user.id) + ".mp4",
-    "format": "mp4"
-}
+    if await aiofiles.os.path.exists(downloadname):
+        await aiofiles.os.remove(downloadname)
     url = update.message.text
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(url)
-    #return await asyncio.to_thread(lambda: YoutubeDL(ydl_opts).download(str(update.message.text)))
-    await update.message.reply_video(video=open(str(update.message.from_user.id) + ".mp4", "rb"))
-
-
+    async def das():
+        ydl_opts = {
+       "outtmpl":downloadname,
+       "format": "mp4",
+       "ratelimit": 10000000}
+        await asyncio.to_thread(lambda: YoutubeDL(ydl_opts).download(str(url)))
+        downloaded = await asyncio.to_thread(lambda: open(downloadname, "rb"))
+        await update.message.reply_video(video=downloaded)
+        await update.message.reply_text ("Downloaded!")
+    asyncio.create_task(das())
 if __name__ == '__main__':
     app = ApplicationBuilder().token(api_key).build()
 
