@@ -9,8 +9,17 @@ import aiofiles.os
 import os
 api_key = os.getenv("API_KEY")
 #downloaddir =
+import proxychecker
+import random
+proxies = {}
+proxychecker.check()
 
-
+proxies = proxychecker.get_proxies()
+proxies_list = list(proxies.keys())
+print(proxies_list)
+print(proxies)
+async def proxy_updater():
+    startcount=len(proxychecker.get_proxies)
 
 async def log(logtext2):
     async with aiofiles.open("log.txt", mode="a") as log:
@@ -34,17 +43,20 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text
     async def das():
         ydl_opts = {
-       "outtmpl":downloadname,
-       "format": "mp4",
-       "ratelimit": 10000000}
+        "outtmpl":downloadname,
+        "format": "mp4",
+        "ratelimit": 10000000,
+        "proxy": ("http://" + random.choice(proxies_list))
+        }
+        print(ydl_opts["proxy"])
         await asyncio.to_thread(lambda: YoutubeDL(ydl_opts).download(str(url)))
         downloaded = await asyncio.to_thread(lambda: open(downloadname, "rb"))
         await update.message.reply_video(video=downloaded)
         await update.message.reply_text ("Downloaded!")
+
     asyncio.create_task(das())
 if __name__ == '__main__':
     app = ApplicationBuilder().token(api_key).build()
-
 
     app.add_handler(CommandHandler("start", start))
 
@@ -56,4 +68,5 @@ if __name__ == '__main__':
     app.add_handler(echo_handler)
     print( "Бот запущен!")
     app.run_polling()
+
 

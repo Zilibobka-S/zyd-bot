@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 def get_proxy():
 
-    ptype = "socks.txt" #socks.txt for socks, proxy.txt for http
+    ptype = "proxy.txt" #socks.txt for socks, proxy.txt for http
     regex = r"([0-9]+(?:\.[0-9]+){3}:[0-9]+).*\+"
     regex_cleaner = r"[0-9]+(?:\.[0-9]+){3}:[0-9]+"
     c = requests.get("https://spys.me/" + ptype)
@@ -29,4 +29,4 @@ def get_proxy():
         for ip, port in zip(ips, ports):
             proxy = f"{ip}:{port}"
             print(proxy, file=myfile)
-
+get_proxy()
